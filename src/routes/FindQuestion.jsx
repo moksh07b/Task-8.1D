@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FilterMenu } from "../main_files/FindQuestion/filter_menu";
 import { Question } from "../main_files/FindQuestion/Question";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDocs } from "firebase/firestore";
 import { db, imageDb } from "../init-firebase";
 import { getDownloadURL, ref } from "firebase/storage";
 
@@ -51,6 +51,20 @@ export function FindQuestion(){
         fetchData();
       }, []);
 
+    const DeleteQuestion = async (id) =>{
+      try{
+        console.log(id)
+        const docRef = doc(db, "QuestionData", id)
+        await deleteDoc(docRef)
+        setData((prevData)=> prevData.filter((question)=>question !== id))
+        console.log("Document Deleted with id : " + id)
+        window.location.reload();
+      }
+      catch(error){
+        console.error("error : " + error);
+      }
+    }
+
     const filteredQuestions = data.filter((question)=>{
         const matchTitle = question.title.toLowerCase().includes(filter.title.toLowerCase())
         const matchTags = filter.tag ? question.tags.toLowerCase() === filter.tag.toLowerCase() : true
@@ -64,7 +78,7 @@ export function FindQuestion(){
             <FilterMenu setFilter={setFilter}/>
             <div className="Question-List">
             {filteredQuestions.map((question, index)=>{
-              return <Question key={index} data={question} />
+              return <Question key={index} data={question} onDelete={()=>DeleteQuestion(question.id)} />
             })}
             </div>
             
